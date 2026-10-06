@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CineCasal</title>
+  <meta name="description" content="Assista YouTube junto, cada um no próprio celular ou computador, com chat. Sem instalar nada." />
+  <meta name="theme-color" content="#1a1016" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%9E%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- ===== Tela inicial ===== -->
+  <section id="view-home" class="home">
+    <div class="home-card">
+      <div class="brand">
+        <div class="brand-hearts" aria-hidden="true"><span>💞</span></div>
+        <h1>CineCasal</h1>
+        <p>Assista junto, mesmo longe. Um dá o play, o outro acompanha. Com chat e sem instalar nada.</p>
+      </div>
+
+      <label for="name">Seu nome</label>
+      <input id="name" maxlength="32" placeholder="Como você quer aparecer" autocomplete="nickname" />
+
+      <button id="create" class="primary">Criar sala</button>
+
+      <div class="or"><span>ou entre numa sala</span></div>
+      <div class="row">
+        <input id="code" class="code" maxlength="6" placeholder="CÓDIGO" autocapitalize="characters" autocomplete="off" />
+        <button id="join">Entrar</button>
+      </div>
+      <p id="home-error" class="error" hidden></p>
+
+      <p class="fine">Toca <b>YouTube</b> e vídeos seus do <b>Google Drive</b> direto na página, sincronizados. Para Netflix, Prime Video e Max, a sala vira um relógio compartilhado com contagem regressiva (ou use a <a href="https://github.com/yaimarketing/cinecasal#readme" target="_blank" rel="noopener">extensão</a> no computador para sincronia total).</p>
+    </div>
+  </section>
+
+  <!-- ===== Sala ===== -->
+  <section id="view-room" class="room" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="dot" id="dot" title="Conexão"></span>
+        <b>CineCasal</b>
+      </div>
+      <button id="share" class="chip" title="Copiar link da sala"><span id="roomcode"></span> · copiar link</button>
+      <button id="leave" class="ghost">Sair</button>
+    </header>
+
+    <div class="layout">
+      <main class="stage">
+        <!-- Casal -->
+        <div class="couple" id="couple"></div>
+
+        <!-- Player -->
+        <div class="player-wrap" id="player-wrap">
+          <div id="player-empty" class="player-card">
+            <div class="big">🍿</div>
+            <p id="empty-text">Esperando o host escolher o vídeo…</p>
+          </div>
+          <div id="player-youtube" class="player-frame" hidden>
+            <div id="yt"></div>
+            <button id="tap" class="tap" hidden>▶ Toque para assistir junto</button>
+            <div id="guest-hint" class="guest-hint" hidden>Só o host controla o vídeo. <button id="mute" class="mini">🔇 som</button></div>
+          </div>
+          <div id="player-video" class="player-frame" hidden>
+            <video id="video" playsinline preload="auto"></video>
+            <button id="tap-video" class="tap" hidden>▶ Toque para assistir junto</button>
+            <div id="video-hint" class="guest-hint" hidden><span id="video-title">Só o host controla o vídeo.</span> <button id="mute-video" class="mini">🔇 som</button></div>
+          </div>
+          <div id="player-manual" class="player-card manual" hidden>
+            <div class="manual-head"><span id="manual-service"></span></div>
+            <a id="manual-open" class="primary small" target="_blank" rel="noopener">Abrir o vídeo no app</a>
+            <div class="clock" id="clock">0:00</div>
+            <div class="clock-state" id="clock-state">⏸ Pausado</div>
+            <p class="manual-help" id="manual-help">Abra o vídeo no app e acompanhe o relógio: quando o host der play, dê play também no mesmo ponto.</p>
+            <div class="manual-controls" id="manual-controls" hidden>
+              <button id="m-play">▶ Play</button>
+              <button id="m-pause">⏸ Pause</button>
+              <input id="m-time" placeholder="mm:ss" inputmode="numeric" />
+              <button id="m-set">Ajustar tempo</button>
+              <button id="m-countdown" class="accent">🎬 3, 2, 1… play</button>
+            </div>
+          </div>
+          <div id="reactions-layer" class="reactions" aria-hidden="true"></div>
+          <div id="countdown" class="countdown" hidden></div>
+        </div>
+
+        <!-- Host: escolher vídeo -->
+        <form id="host-bar" class="host-bar" hidden>
+          <input id="video-url" placeholder="Link do YouTube, do Google Drive (ou Netflix/Prime/Max para o modo relógio)" inputmode="url" />
+          <button type="submit" class="primary">Assistir</button>
+        </form>
+        <p id="room-error" class="error" hidden></p>
+      </main>
+
+      <aside class="chat">
+        <div class="chat-head">
+          <b>Chat</b>
+          <span class="people-count" id="people-count"></span>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="reaction-bar">
+          <button data-emoji="❤️">❤️</button>
+          <button data-emoji="😂">😂</button>
+          <button data-emoji="😱">😱</button>
+          <button data-emoji="🍿">🍿</button>
+          <button data-emoji="😘">😘</button>
+        </div>
+        <form id="compose" class="compose">
+          <input id="text" maxlength="500" placeholder="Mensagem…" autocomplete="off" />
+          <button type="submit" class="primary">Enviar</button>
+        </form>
+      </aside>
+    </div>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -13,3 +13,6 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      # Chave de API do Google (Drive API) para tocar vídeos do Google Drive no modo web. Opcional.
+      - key: GOOGLE_API_KEY
+        sync: false

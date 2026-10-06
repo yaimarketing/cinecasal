@@ -10,6 +10,9 @@
 import { WebSocketServer } from "ws";
 import crypto from "node:crypto";
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const PORT = Number(process.env.PORT) || 8080;
 const HEARTBEAT_MS = 30_000;
@@ -18,6 +21,9 @@ const MAX_CHAT = 500;
 const MAX_URL = 2048;
 // Sem 0/O, 1/I/L para o código ser fácil de ditar.
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+// Se o host cair (celular trocou de rede, aba dormiu), ele tem este tempo para voltar e recuperar o papel.
+const HOST_RESUME_MS = 90_000;
+const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "public");
 
 /** @type {Map<string, Room>} */
 const rooms = new Map();
@@ -101,10 +107,11 @@ function leaveRoom(client, { notifySelf = true } = {}) {
   } else {
     let newHostId = null;
     if (room.hostId === client.id) {
-      // O participante mais antigo vira host.
+      // O participante mais antigo vira host; o antigo pode recuperar o papel se voltar logo (previousId).
       const oldest = [...room.participants.values()].sort((a, b) => a.joinedAt - b.joinedAt)[0];
       room.hostId = oldest.id;
       newHostId = oldest.id;
+      room.formerHost = { id: client.id, until: Date.now() + HOST_RESUME_MS };
     }
     broadcast(room, { type: "participant_left", participant: { id: client.id, name: client.name }, hostId: room.hostId });
     if (newHostId) broadcast(room, { type: "host_changed", hostId: newHostId, reason: "host_left" });
@@ -145,9 +152,17 @@ function handleMessage(client, raw) {
       client.room = room;
       room.participants.set(client.id, client);
       log(`${client.name} entrou na sala ${code}`);
+      // Host que caiu e voltou a tempo recupera o papel.
+      let hostBack = false;
+      if (room.formerHost && msg.previousId === room.formerHost.id && Date.now() < room.formerHost.until) {
+        room.hostId = client.id;
+        room.formerHost = null;
+        hostBack = true;
+      }
       // O novo cliente recebe o estado atual (inclusive a URL) e a lista de participantes.
       send(client.ws, { type: "room_joined", you: { id: client.id, name: client.name }, room: publicRoom(room) });
       broadcast(room, { type: "participant_joined", participant: { id: client.id, name: client.name } }, { except: client.id });
+      if (hostBack) broadcast(room, { type: "host_changed", hostId: client.id, reason: "host_back" }, { except: client.id });
       return;
     }
 
@@ -178,6 +193,15 @@ function handleMessage(client, raw) {
       return broadcast(room, { type: "chat", from: { id: client.id, name: client.name }, text, timestamp: Date.now() });
     }
 
+    case "reaction": {
+      // Reação rápida (coração, risada...) mostrada por cima do vídeo de todos.
+      const room = client.room;
+      if (!room) return sendError(client.ws, "not_in_room", "Você não está em nenhuma sala.");
+      const emoji = String(msg.emoji ?? "").trim().slice(0, 8);
+      if (!emoji) return;
+      return broadcast(room, { type: "reaction", from: { id: client.id, name: client.name }, emoji, timestamp: Date.now() });
+    }
+
     default:
       return sendError(client.ws, "unknown_type", `Tipo de mensagem desconhecido: ${msg.type}`);
   }
@@ -189,13 +213,34 @@ function log(...args) {
 
 // ---------- Servidor ----------
 
-// Um HTTP mínimo só para health check dos provedores (Railway/Fly) e para o WebSocket fazer o upgrade.
+// HTTP: health check, o site do modo web (public/) e o upgrade do WebSocket.
+const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json" };
+
+function serveStatic(req, res) {
+  let pathname = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  // /s/ABC123 é o link da sala: a própria página lê o código da URL.
+  if (pathname === "/" || pathname.startsWith("/s/")) pathname = "/index.html";
+  const file = path.normalize(path.join(PUBLIC_DIR, pathname));
+  if (!file.startsWith(PUBLIC_DIR)) return res.writeHead(403).end();
+  fs.stat(file, (err, stat) => {
+    if (err || !stat.isFile()) return res.writeHead(404, { "content-type": "text/plain; charset=utf-8" }).end("Não encontrado");
+    res.writeHead(200, { "content-type": MIME[path.extname(file)] || "application/octet-stream", "cache-control": pathname === "/index.html" ? "no-cache" : "public, max-age=3600" });
+    fs.createReadStream(file).pipe(res);
+  });
+}
+
 const httpServer = http.createServer((req, res) => {
-  if (req.url === "/" || req.url === "/health") {
+  if (req.url === "/config.json") {
+    // Chave pública da API do Google (restrinja por site no Google Cloud): permite tocar vídeos do Drive.
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+    return res.end(JSON.stringify({ googleApiKey: process.env.GOOGLE_API_KEY || "" }));
+  }
+  if (req.url === "/health") {
     res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*" });
     return res.end(JSON.stringify({ ok: true, rooms: rooms.size, uptime: Math.round(process.uptime()) }));
   }
-  res.writeHead(404).end();
+  if (req.method !== "GET" && req.method !== "HEAD") return res.writeHead(405).end();
+  serveStatic(req, res);
 });
 
 const wss = new WebSocketServer({ server: httpServer });
@@ -240,7 +285,7 @@ heartbeat.unref();
 export function start() {
   return new Promise((resolve) => {
     httpServer.listen(PORT, () => {
-      log(`WatchParty servidor ouvindo em ws://localhost:${PORT}`);
+      log(`CineCasal: site em http://localhost:${PORT} e WebSocket em ws://localhost:${PORT}`);
       resolve(httpServer);
     });
   });

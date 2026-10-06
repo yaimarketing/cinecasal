@@ -1,7 +1,11 @@
 # CineCasal — servidor (WatchParty)
 
-Servidor de sincronização e chat. **WebSocket puro** (biblioteca `ws`), sem Express, sem banco: tudo fica em
-memória. Nenhum vídeo passa por aqui, só comandos (`play/pause/tempo/URL`) e mensagens de chat.
+Servidor de sincronização e chat, e também o **site do modo web** (`public/`). **WebSocket puro** (biblioteca
+`ws`), sem Express, sem banco: tudo fica em memória. Nenhum vídeo passa por aqui, só comandos
+(`play/pause/tempo/URL`), chat e reações.
+
+Rotas HTTP: `/` e `/s/CODIGO` (site), `/config.json` (chave pública do Google para o Drive), `/health`.
+Variáveis: `PORT` e `GOOGLE_API_KEY` (opcional, veja `.env.example`).
 
 ## Rodar localmente
 
@@ -25,7 +29,10 @@ Mensagens JSON com campo `type`.
 | `leave_room` | — | Responde `room_left`; os outros recebem `participant_left` |
 | `sync` | `paused`, `currentTime`, `url` | **Só o host.** Reenviado aos demais como `sync` (+ `updatedAt`) |
 | `chat` | `text` | Reenviado a todos como `chat` com `from {id, name}` e `timestamp` |
+| `reaction` | `emoji` | Reenviado a todos como `reaction` (`🎬` dispara a contagem regressiva no modo relógio) |
 | `ping` | — | Responde `pong` (usado pela extensão para manter o service worker vivo) |
+
+`join_room` aceita `previousId`: se o host cair e voltar em até 90 s com o id antigo, recupera o papel de host.
 
 | Servidor → cliente | Quando |
 |---|---|

@@ -99,6 +99,43 @@ test("criar sala, entrar, sincronizar, chat, sair e troca de host", async () => 
   a.ws.close();
 });
 
+test("reação é reenviada a todos e host que cai recupera o papel com previousId", async () => {
+  const a = await connect();
+  const b = await connect();
+  await a.next();
+  await b.next();
+  a.send({ type: "create_room", name: "Ana" });
+  const created = await a.next();
+  b.send({ type: "join_room", code: created.room.code, name: "Bia" });
+  await b.next();
+  await a.next(); // participant_joined
+
+  b.send({ type: "reaction", emoji: "❤️" });
+  const [ra, rb] = await Promise.all([a.next(), b.next()]);
+  assert.equal(ra.type, "reaction");
+  assert.equal(ra.emoji, "❤️");
+  assert.equal(rb.from.name, "Bia");
+
+  // Host cai (socket fecha): Bia vira host...
+  a.ws.terminate();
+  assert.equal((await b.next()).type, "participant_left");
+  assert.equal((await b.next()).hostId, rb.from.id);
+
+  // ...e Ana volta com previousId: recupera o papel de host.
+  const a2 = await connect();
+  await a2.next();
+  a2.send({ type: "join_room", code: created.room.code, name: "Ana", previousId: created.you.id });
+  const rejoined = await a2.next();
+  assert.equal(rejoined.type, "room_joined");
+  assert.equal(rejoined.room.hostId, rejoined.you.id);
+  assert.equal((await b.next()).type, "participant_joined");
+  const hc = await b.next();
+  assert.equal(hc.type, "host_changed");
+  assert.equal(hc.reason, "host_back");
+  a2.ws.close();
+  b.ws.close();
+});
+
 test("sala inexistente e mensagens inválidas", async () => {
   const c = await connect();
   await c.next();

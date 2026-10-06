@@ -48,26 +48,25 @@
     <header>
       <div class="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M30 20l48 30-48 30z" fill="#fff"/></svg></div>
       <h1>CineCasal</h1>
-      <p class="tag">Assista junto, cada um na própria conta. Play, pause e pular sincronizados, com chat.</p>
-      <div class="platforms"><span>YouTube</span><span>Netflix</span><span>Prime Video</span><span>Max</span></div>
+      <p class="tag">Assista junto, mesmo longe. Um dá o play, o outro acompanha. Com chat, reações e sem instalar nada.</p>
+      <div class="platforms"><span>YouTube</span><span>Google Drive</span><span>Netflix</span><span>Prime Video</span><span>Max</span></div>
       <div class="cta">
-        <a class="btn" href="https://github.com/yaimarketing/cinecasal/archive/refs/heads/main.zip">⬇ Baixar a extensão (.zip)</a>
-        <a class="btn secondary" href="https://github.com/yaimarketing/cinecasal">Código no GitHub</a>
+        <a class="btn" href="https://cinecasal.onrender.com">💞 Abrir o CineCasal</a>
+        <a class="btn secondary" href="https://github.com/yaimarketing/cinecasal/archive/refs/heads/main.zip">⬇ Extensão do Chrome (.zip)</a>
       </div>
       <p class="status"><span class="dot" id="dot"></span><span id="server-status">Verificando o servidor…</span></p>
     </header>
 
-    <div class="note">Ninguém transmite vídeo para ninguém. Cada pessoa abre o filme no próprio navegador, logada na própria conta. A extensão só manda os comandos de play, pause e tempo, e as mensagens do chat.</div>
-
-    <h2>Como funciona</h2>
+    <h2>Modo web: no celular ou no computador, sem instalar</h2>
     <div class="steps">
-      <div class="step"><b>1</b>Todos instalam a extensão no Chrome e entram na plataforma com a própria conta.</div>
-      <div class="step"><b>2</b>Uma pessoa abre o vídeo, clica no ícone e cria a sala. Recebe um código de 6 letras.</div>
-      <div class="step"><b>3</b>Os outros clicam no ícone, digitam o código e entram. A página avisa qual vídeo abrir.</div>
-      <div class="step"><b>4</b>Quem criou a sala é o host: o play, pause e pular dele valem para todos. O chat fica na barra lateral.</div>
+      <div class="step"><b>1</b>Abra o <a href="https://cinecasal.onrender.com">CineCasal</a>, digite seu nome e crie a sala.</div>
+      <div class="step"><b>2</b>Toque em <i>copiar link</i> e mande para quem vai assistir com você. A pessoa abre o link e entra.</div>
+      <div class="step"><b>3</b>Cole o link do vídeo: YouTube ou um vídeo seu no Google Drive tocam na página, sincronizados.</div>
+      <div class="step"><b>4</b>Netflix, Prime e Max viram o <b>modo relógio</b>: cada um abre no app e o host comanda a contagem 3, 2, 1… play.</div>
     </div>
+    <p class="note">Netflix, Prime e Max não deixam o vídeo deles tocar dentro de outra página ou app (DRM). Para sincronia total nesses serviços no computador, use a extensão abaixo, do mesmo jeito que o Teleparty funciona.</p>
 
-    <h2>Instalar a extensão (Chrome, Edge ou Brave)</h2>
+    <h2>Extensão do Chrome: Netflix, Prime e Max sincronizados</h2>
     <div class="card">
       <ol>
         <li>Baixe o <a href="https://github.com/yaimarketing/cinecasal/archive/refs/heads/main.zip">.zip do projeto</a> e descompacte. A extensão é a pasta <code>extension</code>.</li>
@@ -75,10 +74,10 @@
         <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta <code>extension</code>.</li>
         <li>Fixe o ícone roxo na barra do navegador (ícone de quebra-cabeça → alfinete).</li>
       </ol>
-      <p class="note">Todos precisam estar <b>logados na plataforma</b> e ter a <b>extensão instalada</b>. A extensão já vem apontando para o servidor público <code>wss://cinecasal.onrender.com</code>. Esse servidor dorme depois de 15 minutos sem uso: a primeira conexão do dia pode levar até um minuto.</p>
+      <p class="note">Na extensão, todos precisam estar <b>logados na plataforma</b> e ter a <b>extensão instalada</b>. Ela já vem apontando para o servidor público <code>wss://cinecasal.onrender.com</code>, o mesmo do modo web. Esse servidor dorme depois de 15 minutos sem uso: a primeira conexão do dia pode levar até um minuto.</p>
     </div>
 
-    <h2>Usar</h2>
+    <h2>Usar a extensão</h2>
     <div class="card">
       <ol>
         <li>Abra o vídeo (YouTube, Netflix, Prime Video ou Max).</li>
@@ -98,7 +97,8 @@
     <h2>Limitações conhecidas</h2>
     <div class="card">
       <ul>
-        <li><b>Netflix, Prime e Max mudam o player com frequência.</b> O YouTube foi testado de ponta a ponta; os outros precisam de teste com contas reais. Detalhes por serviço no <a href="https://github.com/yaimarketing/cinecasal#problemas-conhecidos-por-servi%C3%A7o">README</a>.</li>
+        <li><b>Google Drive:</b> o arquivo precisa estar compartilhado como "Qualquer pessoa com o link" e em MP4 ou WebM. Só quem criou a sala cola o link.</li>
+        <li><b>Netflix, Prime e Max mudam o player com frequência.</b> Na extensão, o YouTube foi testado de ponta a ponta; os outros precisam de teste com contas reais. Detalhes no <a href="https://github.com/yaimarketing/cinecasal#problemas-conhecidos-por-servi%C3%A7o">README</a>.</li>
         <li>Catálogos diferem por país: um título pode não existir para quem está em outra região.</li>
         <li>No Prime Video, a URL costuma ficar na página da série ao trocar de episódio, então pode faltar o aviso de troca.</li>
         <li>Anúncios (YouTube, Max com anúncios) desalinham o tempo até o próximo comando do host.</li>
@@ -117,10 +117,10 @@
         const r = await fetch("https://cinecasal.onrender.com/health", { signal: ctrl.signal });
         const j = await r.json();
         dot.className = "dot ok";
-        txt.textContent = `Servidor no ar · ${j.rooms} sala${j.rooms === 1 ? "" : "s"} aberta${j.rooms === 1 ? "" : "s"} agora`;
+        txt.textContent = `App no ar · ${j.rooms} sala${j.rooms === 1 ? "" : "s"} aberta${j.rooms === 1 ? "" : "s"} agora`;
       } catch {
         dot.className = "dot off";
-        txt.textContent = "Servidor dormindo ou ainda não publicado — a extensão acorda ele ao conectar (pode levar até 1 min).";
+        txt.textContent = "App dormindo ou ainda não publicado — ao abrir o link ele acorda (pode levar até 1 min).";
       }
     })();
   </script>

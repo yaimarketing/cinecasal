@@ -1,12 +1,24 @@
 # CineCasal
 
-**Site:** https://yaimarketing.github.io/cinecasal/ · **Servidor público:** `wss://cinecasal.onrender.com`
+**App (modo web, sem instalar nada):** https://cinecasal.onrender.com · **Página de apresentação:**
+https://yaimarketing.github.io/cinecasal/
 
 [![Deploy no Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/yaimarketing/cinecasal)
 
-Assista **YouTube, Netflix, Prime Video e Max** em sincronia com quem você gosta. Quem cria a sala é o **host**:
-o play, pause e pular dele valem para todo mundo. Tem **chat** numa barra lateral. Extensão do Chrome
-("WatchParty") + servidor de sincronização.
+Assista junto com quem você gosta, cada um no próprio celular ou computador. Quem cria a sala é o **host**:
+o play, pause e pular dele valem para todo mundo. Tem **chat**, reações e layout de casal.
+
+Dois jeitos de usar:
+
+| | Modo web (celular e computador) | Extensão do Chrome (computador) |
+|---|---|---|
+| Instalação | Nenhuma: abre o link | Carregar a pasta `extension/` no Chrome |
+| YouTube | ✅ sincronizado na página | ✅ sincronizado no site do YouTube |
+| Vídeos seus (Google Drive ou link direto .mp4/.webm) | ✅ sincronizado na página | — |
+| Netflix, Prime Video, Max | 🕒 modo relógio: link para abrir no app, relógio compartilhado e contagem 3-2-1 | ✅ sincronizado no site do serviço, cada um na própria conta |
+
+Netflix, Prime e Max **não podem ser embutidos** em outra página nem em outro app (bloqueio de iframe + DRM),
+por isso a sincronia total deles só existe via extensão, como no Teleparty.
 
 **Como funciona (e o que não faz):** cada pessoa assiste no **próprio navegador, logada na própria conta** da
 plataforma, com a extensão instalada. Nenhum vídeo é transmitido ou gravado; o servidor só repassa comandos
@@ -15,12 +27,38 @@ Prime e Max, que não podem ser embutidos num site.
 
 | Pasta | O que é |
 |---|---|
+| [`server/`](server/README.md) | Servidor de sincronização (Node + `ws`) **e o site do modo web** (`server/public/`), com deploy no Render (`render.yaml`), Railway ou Fly.io |
 | [`extension/`](extension/README.md) | Extensão Chrome (Manifest V3): sync, avisos, barra de chat, popup |
-| [`server/`](server/README.md) | Servidor de sincronização (Node + `ws`), com deploy no Render (`render.yaml`), Railway ou Fly.io |
-| `docs/` | Site publicado no GitHub Pages (instruções + download) |
-| `e2e/` | Teste automatizado ponta a ponta (Playwright, com um "YouTube falso" local) |
+| `docs/` | Página de apresentação publicada no GitHub Pages |
+| `e2e/` | Testes automatizados ponta a ponta (Playwright): modo web (`web.mjs`) e extensão (`run.mjs`) |
 
-## Começar a usar
+## Modo web
+
+1. Abra https://cinecasal.onrender.com, digite seu nome e **Criar sala**.
+2. Toque em **copiar link** e mande para a outra pessoa. Ela abre o link, digita o nome e entra.
+3. Cole o link do vídeo e **Assistir**:
+   - **YouTube**: toca na página, sincronizado. O host tem os controles; o convidado só assiste (com botão de som).
+   - **Google Drive**: compartilhe o arquivo como *Qualquer pessoa com o link* e cole o link. Toca no player da
+     página, sincronizado (precisa da `GOOGLE_API_KEY` no servidor, abaixo). Formatos: MP4 (H.264/AAC) ou WebM.
+   - **Link direto** de um `.mp4`/`.webm` também funciona.
+   - **Netflix, Prime Video, Max**: a sala vira o **modo relógio**. Cada um abre o vídeo no app; o host usa
+     Play/Pause/Ajustar tempo e a contagem **3, 2, 1… play** para todos darem play juntos.
+4. No celular, se o vídeo não começar sozinho, toque em **▶ Toque para assistir junto** (regra do navegador).
+
+Se o host cair ou recarregar a página, volta para a sala e continua host (até 90 s). Reações (❤️ 😂 😱 🍿 😘)
+flutuam no vídeo de todos.
+
+### Chave do Google Drive (uma vez, dono do servidor)
+
+1. Em https://console.cloud.google.com crie um projeto, abra **APIs e serviços → Biblioteca** e ative
+   **Google Drive API**.
+2. Em **Credenciais → Criar credenciais → Chave de API**. Restrinja a chave: *Sites* → `https://cinecasal.onrender.com/*`
+   e *APIs* → Google Drive API.
+3. No Render, **Environment → GOOGLE_API_KEY** = a chave. Salve; o serviço reinicia.
+
+Sem a chave, o app avisa ao colar um link do Drive. YouTube e links diretos não precisam dela.
+
+## Extensão (sincronia total na Netflix, Prime e Max)
 
 1. Baixe o [.zip do projeto](https://github.com/yaimarketing/cinecasal/archive/refs/heads/main.zip) e
    descompacte. Em `chrome://extensions`, ligue **Modo do desenvolvedor** → **Carregar sem compactação** →
@@ -30,11 +68,13 @@ Prime e Max, que não podem ser embutidos num site.
    **Avançado: servidor** no popup.
 3. Abra o vídeo, clique no ícone, **Criar sala**, mande o código. Os outros entram com o código.
 
-### Publicar o site e o servidor (uma vez, dono do repositório)
+### Publicar (uma vez, dono do repositório)
 
-- **Site** (`docs/`): em **Settings → Pages → Build and deployment**, escolha *Deploy from a branch*, branch
-  `main`, pasta `/docs`, **Save**. Em ~1 min o site fica em https://yaimarketing.github.io/cinecasal/.
-- **Servidor**: clique no botão *Deploy no Render* acima (conta grátis, sem cartão) e confirme o blueprint.
+- **App + servidor**: clique no botão *Deploy no Render* acima (conta grátis, sem cartão) e confirme o
+  blueprint. O app fica em https://cinecasal.onrender.com. No plano grátis ele dorme após 15 min sem uso e leva
+  até 1 min para acordar.
+- **Página de apresentação** (`docs/`): em **Settings → Pages → Build and deployment**, escolha *Deploy from a
+  branch*, branch `main`, pasta `/docs`, **Save**. Em ~1 min fica em https://yaimarketing.github.io/cinecasal/.
 
 ## Teste rápido no YouTube (duas janelas no mesmo Chrome)
 
@@ -104,15 +144,18 @@ ver os erros do `background.js`, e o DevTools (F12) da aba para os do `content.j
 
 ### Teste automatizado
 
-`e2e/run.mjs` faz tudo acima sozinho: sobe dois perfis do Chromium com a extensão, aponta `www.youtube.com`
-para um site falso local com um `<video>`, e confere criação da sala, aviso de URL, play/pause/seek, chat,
+`e2e/web.mjs` testa o modo web (host no desktop, convidado num viewport de celular): sala pelo link, vídeo
+direto sincronizado (mesmo caminho do Drive), chat, reações, modo relógio com contagem e o host voltando após
+recarregar (18 verificações). `e2e/run.mjs` testa a extensão: dois perfis do Chromium, `www.youtube.com`
+apontando para um site falso local com um `<video>`, criação da sala, aviso de URL, play/pause/seek, chat,
 eventos de sistema, troca de host e aviso de login (17 verificações).
 
 ```bash
 cd server && npm start &                      # servidor em :8080
 cd ../e2e && npm install                      # baixa o Playwright/Chromium
 sudo npm run site &                           # "YouTube falso" na porta 80 (precisa de root pela porta)
-npm test                                      # Linux sem interface gráfica: xvfb-run -a npm test
+npm run test:web                              # modo web
+xvfb-run -a npm run test:extensao             # extensão (precisa de tela; no Linux sem tela use o xvfb-run)
 ```
 
 Precisa de `ffmpeg` no PATH (gera o clipe de teste). Para usar um Chromium já instalado:
@@ -123,6 +166,16 @@ Precisa de `ffmpeg` no PATH (gera o clipe de teste). Para usar um Chromium já i
 Os players desses sites mudam com frequência e sem aviso. O YouTube foi validado de ponta a ponta com o teste
 automatizado (contra uma página que imita o `<video>` do YouTube); **Netflix, Prime e Max precisam de validação
 manual** com contas reais, pois exigem login e DRM e não dá para simular aqui.
+
+### Modo web
+
+- **YouTube embutido** (IFrame API) não pôde ser testado automaticamente (sem acesso ao youtube.com no ambiente
+  de testes): validar manualmente play/pause/seek do host e o botão "Toque para assistir junto" no celular.
+  Vídeos com embed desativado pelo dono não tocam na página (o YouTube mostra erro 150/101).
+- **Google Drive**: depende da `GOOGLE_API_KEY` e do arquivo compartilhado com link. O Drive bloqueia por 24 h
+  arquivos baixados demais ("quota exceeded"); para duas pessoas não acontece. Safari não toca `.mkv`.
+- **Modo relógio** não controla o app da Netflix/Prime/Max: cada um dá play; o relógio e a contagem servem para
+  alinhar. Para sincronia de verdade, extensão.
 
 ### YouTube
 
