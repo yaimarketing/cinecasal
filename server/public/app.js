@@ -75,7 +75,8 @@
     if (/\.(mp4|webm|m4v|mov|ogv|mkv)(\?|$)/i.test(u.pathname + u.search) || u.searchParams.has("cc-video")) {
       return { kind: "video", src: url, url, label: "Vídeo" };
     }
-    const label = h.includes("netflix") ? "Netflix" : h.includes("primevideo") || h.includes("amazon") ? "Prime Video" : h.includes("max.com") || h.includes("hbomax") ? "Max" : h.includes("disney") ? "Disney+" : h;
+    // Links curtos de compartilhar: nflx.it (Netflix), a.co / amzn.to (Prime Video).
+    const label = h.includes("netflix") || h === "nflx.it" ? "Netflix" : h.includes("primevideo") || h.includes("amazon") || h === "a.co" || h === "amzn.to" ? "Prime Video" : h.includes("max.com") || h.includes("hbomax") ? "Max" : h.includes("disney") ? "Disney+" : h;
     return { kind: "manual", url, label };
   }
 
