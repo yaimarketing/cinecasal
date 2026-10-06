@@ -1,0 +1,15 @@
+# Blueprint do Render (render.com): sobe o servidor de sincronização no plano grátis.
+# Botão "Deploy to Render" no README usa este arquivo. Endereço final: https://cinecasal.onrender.com
+services:
+  - type: web
+    name: cinecasal
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

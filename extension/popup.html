@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>WatchParty</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; width: 320px; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #15131a; color: #ece9f1; }
+    .wrap { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+    h1 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #888; }
+    .dot.connected { background: #4cc38a; } .dot.connecting { background: #f5b942; } .dot.disconnected { background: #ff6b6b; }
+    .status { color: #a19bab; font-size: 12px; }
+    label { display: block; font-size: 12px; color: #a19bab; margin-bottom: 4px; }
+    input { width: 100%; box-sizing: border-box; background: #221f29; border: 1px solid #3a3544; color: inherit; border-radius: 6px; padding: 8px; font-size: 14px; }
+    input:focus { outline: 2px solid #6c5ce7; }
+    input.code { font-family: ui-monospace, monospace; text-transform: uppercase; letter-spacing: 2px; }
+    button { background: #6c5ce7; color: #fff; border: 0; border-radius: 6px; padding: 9px 12px; cursor: pointer; font-size: 14px; font-weight: 600; width: 100%; }
+    button:hover { background: #5b4bd6; }
+    button.secondary { background: #2c2834; color: #ece9f1; font-weight: 500; }
+    button.secondary:hover { background: #3a3544; }
+    button:disabled { opacity: .5; cursor: default; }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    .box { background: #1e1b24; border: 1px solid #2c2834; border-radius: 8px; padding: 10px 12px; }
+    .bigcode { font-family: ui-monospace, monospace; font-size: 28px; letter-spacing: 4px; text-align: center; margin: 4px 0; }
+    .host { color: #f5b942; font-weight: 600; }
+    .hint { font-size: 12px; color: #a19bab; background: #1e1b24; border-left: 3px solid #6c5ce7; padding: 8px 10px; border-radius: 0 6px 6px 0; }
+    .err { color: #ff6b6b; font-size: 12px; }
+    details summary { cursor: pointer; font-size: 12px; color: #a19bab; }
+    .people { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .person { background: #2c2834; border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+    .person.host::before { content: "★ "; color: #f5b942; }
+    a { color: #a29bfe; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1><span class="dot" id="dot"></span> WatchParty</h1>
+    <div class="status" id="status">Carregando…</div>
+    <div class="err" id="error" hidden></div>
+
+    <!-- Fora de uma sala -->
+    <div id="out">
+      <label for="name">Seu nome</label>
+      <input id="name" maxlength="32" placeholder="Como os amigos vão te ver" />
+      <div style="height:10px"></div>
+      <button id="create">Criar sala</button>
+      <div style="height:10px"></div>
+      <label for="code">Entrar numa sala</label>
+      <div class="row">
+        <input id="code" class="code" maxlength="6" placeholder="CÓDIGO" />
+        <button id="join" class="secondary">Entrar</button>
+      </div>
+    </div>
+
+    <!-- Dentro de uma sala -->
+    <div id="in" hidden>
+      <div class="box">
+        <div class="status">Código da sala</div>
+        <div class="bigcode" id="roomcode"></div>
+        <button id="copy" class="secondary">Copiar código</button>
+        <div id="role" style="margin-top:8px"></div>
+        <div class="people" id="people"></div>
+      </div>
+      <div style="height:10px"></div>
+      <div id="hosturl" hidden><a id="hostlink" href="#" target="_blank">Abrir o vídeo que o host está assistindo</a><div style="height:10px"></div></div>
+      <button id="leave" class="secondary">Sair da sala</button>
+    </div>
+
+    <p class="hint">Todos precisam estar <b>logados na plataforma</b> (YouTube, Netflix, Prime Video ou Max) e ter a <b>extensão instalada</b>. Nenhum vídeo é transmitido: cada um assiste na própria conta.</p>
+
+    <details>
+      <summary>Avançado: servidor</summary>
+      <div style="margin-top:8px" class="row">
+        <input id="server" placeholder="wss://cinecasal.onrender.com" />
+        <button id="saveserver" class="secondary" style="flex:0 0 auto">Salvar</button>
+      </div>
+    </details>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "watchparty-server",
+  "version": "0.1.0",
+  "description": "Servidor de sincronização e chat do WatchParty (WebSocket puro)",
+  "main": "server.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

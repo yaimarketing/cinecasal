@@ -1,0 +1,24 @@
+name: Testes do servidor
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Checa a sintaxe da extensão
+        working-directory: extension
+        run: |
+          for f in background.js content.js netflix-page.js popup.js; do node --check "$f"; done
+          node -e 'JSON.parse(require("fs").readFileSync("manifest.json","utf8"))'

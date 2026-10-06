@@ -1,0 +1,6 @@
+node_modules/
+.env
+.DS_Store
+e2e/profiles/
+e2e/site/clip.webm
+e2e/*.png

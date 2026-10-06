@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CineCasal — assista junto</title>
+  <meta name="description" content="Assista YouTube, Netflix, Prime Video e Max em sincronia com quem você gosta. Cada um na própria conta, com chat." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%236c5ce7'/%3E%3Cpath d='M38 28l36 22-36 22z' fill='%23fff'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #0f0e13; --surface: #1a1822; --text: #ece9f1; --muted: #a19bab; --border: #2c2834;
+      --accent: #6c5ce7; --accent-2: #a29bfe; --ok: #4cc38a; --warn: #f5b942;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) { --bg: #f6f5f8; --surface: #fff; --text: #1d1b22; --muted: #6b6775; --border: #e3e0e8; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 820px; margin: 0 auto; padding: 24px 16px 64px; }
+    header { text-align: center; padding: 48px 0 24px; }
+    .logo { width: 84px; height: 84px; border-radius: 20px; background: var(--accent); display: inline-grid; place-items: center; margin-bottom: 16px; }
+    .logo svg { width: 44px; height: 44px; }
+    h1 { margin: 0; font-size: 40px; letter-spacing: -0.5px; }
+    .tag { color: var(--muted); font-size: 19px; margin: 8px 0 0; }
+    .platforms { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .platforms span { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 14px; font-size: 14px; }
+    .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 28px 0 8px; }
+    .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 14px 22px; border-radius: 10px; font-weight: 700; }
+    .btn:hover { background: #5b4bd6; }
+    .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    h2 { font-size: 24px; margin: 44px 0 12px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin: 12px 0; }
+    ol, ul { padding-left: 22px; } li { margin: 6px 0; }
+    code { background: var(--border); padding: 2px 6px; border-radius: 5px; font-size: 15px; }
+    .note { border-left: 4px solid var(--warn); padding: 10px 14px; background: var(--surface); border-radius: 0 10px 10px 0; color: var(--muted); font-size: 15px; }
+    .steps { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+    .step b { display: block; font-size: 30px; color: var(--accent-2); }
+    footer { color: var(--muted); font-size: 14px; text-align: center; margin-top: 48px; }
+    a { color: var(--accent-2); }
+    .status { font-size: 14px; color: var(--muted); text-align: center; margin-top: 6px; }
+    .status .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #888; margin-right: 6px; }
+    .status .dot.ok { background: var(--ok); } .status .dot.off { background: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M30 20l48 30-48 30z" fill="#fff"/></svg></div>
+      <h1>CineCasal</h1>
+      <p class="tag">Assista junto, cada um na própria conta. Play, pause e pular sincronizados, com chat.</p>
+      <div class="platforms"><span>YouTube</span><span>Netflix</span><span>Prime Video</span><span>Max</span></div>
+      <div class="cta">
+        <a class="btn" href="https://github.com/yaimarketing/cinecasal/archive/refs/heads/main.zip">⬇ Baixar a extensão (.zip)</a>
+        <a class="btn secondary" href="https://github.com/yaimarketing/cinecasal">Código no GitHub</a>
+      </div>
+      <p class="status"><span class="dot" id="dot"></span><span id="server-status">Verificando o servidor…</span></p>
+    </header>
+
+    <div class="note">Ninguém transmite vídeo para ninguém. Cada pessoa abre o filme no próprio navegador, logada na própria conta. A extensão só manda os comandos de play, pause e tempo, e as mensagens do chat.</div>
+
+    <h2>Como funciona</h2>
+    <div class="steps">
+      <div class="step"><b>1</b>Todos instalam a extensão no Chrome e entram na plataforma com a própria conta.</div>
+      <div class="step"><b>2</b>Uma pessoa abre o vídeo, clica no ícone e cria a sala. Recebe um código de 6 letras.</div>
+      <div class="step"><b>3</b>Os outros clicam no ícone, digitam o código e entram. A página avisa qual vídeo abrir.</div>
+      <div class="step"><b>4</b>Quem criou a sala é o host: o play, pause e pular dele valem para todos. O chat fica na barra lateral.</div>
+    </div>
+
+    <h2>Instalar a extensão (Chrome, Edge ou Brave)</h2>
+    <div class="card">
+      <ol>
+        <li>Baixe o <a href="https://github.com/yaimarketing/cinecasal/archive/refs/heads/main.zip">.zip do projeto</a> e descompacte. A extensão é a pasta <code>extension</code>.</li>
+        <li>Abra <code>chrome://extensions</code> e ligue o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
+        <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta <code>extension</code>.</li>
+        <li>Fixe o ícone roxo na barra do navegador (ícone de quebra-cabeça → alfinete).</li>
+      </ol>
+      <p class="note">Todos precisam estar <b>logados na plataforma</b> e ter a <b>extensão instalada</b>. A extensão já vem apontando para o servidor público <code>wss://cinecasal.onrender.com</code>. Esse servidor dorme depois de 15 minutos sem uso: a primeira conexão do dia pode levar até um minuto.</p>
+    </div>
+
+    <h2>Usar</h2>
+    <div class="card">
+      <ol>
+        <li>Abra o vídeo (YouTube, Netflix, Prime Video ou Max).</li>
+        <li>Clique no ícone, digite seu nome e <b>Criar sala</b>. Copie o código e mande para quem vai assistir com você.</li>
+        <li>Quem recebeu o código clica no ícone, digita o nome e o código e clica em <b>Entrar</b>. Se estiver em outro vídeo, aparece um aviso <i>"O host está assistindo… clique para abrir"</i>.</li>
+        <li>Pronto: o host controla, todo mundo acompanha. A barra lateral mostra quem está na sala, o chat e eventos como <i>"Host pausou em 12:34"</i>. O botão <b>›</b> recolhe a barra.</li>
+      </ol>
+    </div>
+
+    <h2>Quer seu próprio servidor?</h2>
+    <div class="card">
+      <p>O servidor é pequeno e gratuito de hospedar. Com uma conta no <a href="https://render.com">Render</a>, clique abaixo e aceite o blueprint do repositório. Depois, no popup da extensão, abra <b>Avançado: servidor</b> e coloque o endereço <code>wss://SEU-APP.onrender.com</code>.</p>
+      <p><a class="btn secondary" href="https://render.com/deploy?repo=https://github.com/yaimarketing/cinecasal">Deploy no Render</a></p>
+      <p>Também dá para rodar no computador: <code>cd server && npm install && npm start</code> e usar <code>ws://localhost:8080</code> na extensão. Instruções para Railway e Fly.io estão no <a href="https://github.com/yaimarketing/cinecasal/blob/main/server/README.md">README do servidor</a>.</p>
+    </div>
+
+    <h2>Limitações conhecidas</h2>
+    <div class="card">
+      <ul>
+        <li><b>Netflix, Prime e Max mudam o player com frequência.</b> O YouTube foi testado de ponta a ponta; os outros precisam de teste com contas reais. Detalhes por serviço no <a href="https://github.com/yaimarketing/cinecasal#problemas-conhecidos-por-servi%C3%A7o">README</a>.</li>
+        <li>Catálogos diferem por país: um título pode não existir para quem está em outra região.</li>
+        <li>No Prime Video, a URL costuma ficar na página da série ao trocar de episódio, então pode faltar o aviso de troca.</li>
+        <li>Anúncios (YouTube, Max com anúncios) desalinham o tempo até o próximo comando do host.</li>
+        <li>Se o navegador bloquear o play automático, clique uma vez na página ao entrar.</li>
+      </ul>
+    </div>
+
+    <footer>CineCasal · código aberto em <a href="https://github.com/yaimarketing/cinecasal">github.com/yaimarketing/cinecasal</a></footer>
+  </main>
+  <script>
+    // Mostra se o servidor público está acordado (o Render dorme após 15 min sem uso).
+    (async () => {
+      const dot = document.getElementById("dot"), txt = document.getElementById("server-status");
+      try {
+        const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch("https://cinecasal.onrender.com/health", { signal: ctrl.signal });
+        const j = await r.json();
+        dot.className = "dot ok";
+        txt.textContent = `Servidor no ar · ${j.rooms} sala${j.rooms === 1 ? "" : "s"} aberta${j.rooms === 1 ? "" : "s"} agora`;
+      } catch {
+        dot.className = "dot off";
+        txt.textContent = "Servidor dormindo ou ainda não publicado — a extensão acorda ele ao conectar (pode levar até 1 min).";
+      }
+    })();
+  </script>
+</body>
+</html>
