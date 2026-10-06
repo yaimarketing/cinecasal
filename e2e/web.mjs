@@ -1,8 +1,30 @@
 // Teste ponta a ponta do MODO WEB: host no desktop e convidado num viewport de celular.
-// Pré-requisitos: servidor em http://localhost:8080 e fake-site.mjs na porta 80 (serve /clip.webm).
+// O próprio teste sobe (e reinicia) o servidor em :8080. Pré-requisito: fake-site.mjs na porta 80 (serve /clip.webm).
 import { chromium } from "playwright";
+import { spawn } from "node:child_process";
 import path from "node:path";
 const TMP = path.dirname(new URL(import.meta.url).pathname);
+let server;
+async function startServer() {
+  try {
+    await fetch("http://localhost:8080/health");
+    throw new Error("já existe algo na porta 8080: encerre antes de rodar o teste");
+  } catch (err) {
+    if (!(err.cause || err.code === undefined && /fetch failed/.test(err.message))) throw err;
+  }
+  server = spawn(process.execPath, [path.join(TMP, "..", "server", "server.js")], { stdio: "inherit", env: { ...process.env, PORT: "8080" } });
+  let dead = false;
+  server.once("exit", () => (dead = true));
+  for (let i = 0; i < 50; i++) {
+    if (dead) throw new Error("o servidor do teste morreu ao iniciar");
+    try {
+      if ((await fetch("http://localhost:8080/health")).ok) return;
+    } catch {}
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error("servidor não subiu");
+}
+await startServer();
 const results = [];
 const check = (name, ok, info = "") => { results.push(ok); console.log(`${ok ? "✔" : "✘"} ${name}${info ? " — " + info : ""}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -86,10 +108,28 @@ try {
   await sleep(800);
   check("host recarregou e continua host", await host.isVisible("#host-bar"));
   check("convidado viu o host voltar", /Ana agora é o host|Ana entrou/.test(await chatText(guest)));
+
+  // Servidor reinicia (como no Render): a sala volta com o mesmo código e estado, sem ninguém fazer nada.
+  const before = await guest.textContent("#clock");
+  const exited = new Promise((r) => server.once("exit", r));
+  server.kill("SIGKILL");
+  await exited;
+  await host.waitForFunction(() => !document.getElementById("dot").classList.contains("connected"), null, { timeout: 10000 });
+  check("os dois perceberam a queda do servidor", await guest.evaluate(() => !document.getElementById("dot").classList.contains("connected")));
+  await startServer();
+  await host.waitForFunction(() => document.getElementById("dot").classList.contains("connected"), null, { timeout: 20000 });
+  await guest.waitForFunction(() => document.getElementById("dot").classList.contains("connected"), null, { timeout: 20000 });
+  await sleep(1000);
+  check("após reinício, os dois continuam na mesma sala", (await host.textContent("#roomcode")).trim() === code && (await guest.textContent("#roomcode")).trim() === code && (await guest.textContent("#couple")).includes("Ana"));
+  check("após reinício, host continua host", (await host.isVisible("#host-bar")) && (await guest.isHidden("#host-bar")));
+  const after = await guest.textContent("#clock");
+  check("após reinício, relógio continua de onde estava", /^1:30:/.test(after.trim()) && (await guest.textContent("#clock-state")).includes("Tocando"), `${before.trim()} → ${after.trim()}`);
+  check("chat avisou a reconexão", /Reconectado/.test(await chatText(guest)), (await chatText(guest)).replace(/\n+/g, " | ").slice(-300));
 } catch (err) {
   check("execução sem exceção", false, String(err.stack || err));
 } finally {
   await browser.close();
+  server?.kill();
 }
 const failed = results.filter((r) => !r).length;
 console.log(`\n${results.length - failed}/${results.length} verificações passaram`);

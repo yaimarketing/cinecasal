@@ -45,8 +45,9 @@ Prime e Max, que não podem ser embutidos num site.
      Play/Pause/Ajustar tempo e a contagem **3, 2, 1… play** para todos darem play juntos.
 4. No celular, se o vídeo não começar sozinho, toque em **▶ Toque para assistir junto** (regra do navegador).
 
-Se o host cair ou recarregar a página, volta para a sala e continua host (até 90 s). Reações (❤️ 😂 😱 🍿 😘)
-flutuam no vídeo de todos.
+Se o host cair ou recarregar a página, volta para a sala e continua host (até 90 s). Se o **servidor** reiniciar
+(no Render grátis ele dorme após 15 min sem uso e reinicia a cada deploy), quem estava na sala a recria sozinho
+com o mesmo código, o mesmo vídeo e o tempo de onde parou. Reações (❤️ 😂 😱 🍿 😘) flutuam no vídeo de todos.
 
 ### Chave do Google Drive (uma vez, dono do servidor)
 
@@ -145,8 +146,8 @@ ver os erros do `background.js`, e o DevTools (F12) da aba para os do `content.j
 ### Teste automatizado
 
 `e2e/web.mjs` testa o modo web (host no desktop, convidado num viewport de celular): sala pelo link, vídeo
-direto sincronizado (mesmo caminho do Drive), chat, reações, modo relógio com contagem e o host voltando após
-recarregar (18 verificações). `e2e/run.mjs` testa a extensão: dois perfis do Chromium, `www.youtube.com`
+direto sincronizado (mesmo caminho do Drive), chat, reações, modo relógio com contagem, o host voltando após
+recarregar e o servidor reiniciando no meio da sessão com a sala preservada (23 verificações). `e2e/run.mjs` testa a extensão: dois perfis do Chromium, `www.youtube.com`
 apontando para um site falso local com um `<video>`, criação da sala, aviso de URL, play/pause/seek, chat,
 eventos de sistema, troca de host e aviso de login (17 verificações).
 

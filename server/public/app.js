@@ -91,7 +91,7 @@
       if (state.ws !== ws) return;
       setStatus("connected");
       state.reconnectDelay = 1000;
-      if (state.wantRoom) send({ type: "join_room", ...state.wantRoom });
+      if (state.wantRoom) send({ type: "join_room", ...state.wantRoom, recreate: lastKnown() });
       for (const m of pending) send(m);
       pending.length = 0;
     };
@@ -127,6 +127,15 @@
     if (state.ws?.readyState === WebSocket.OPEN) send({ type: "ping" });
   }, 25_000);
 
+  // Último estado conhecido da sala (vídeo, tempo, quem era o host) para recriá-la se o servidor reiniciar.
+  function lastKnown() {
+    const r = state.room || JSON.parse(sessionStorage.getItem("cc-room-state") || "null");
+    return r ? { hostId: r.hostId, state: r.state } : undefined;
+  }
+  function rememberRoom() {
+    if (state.room) sessionStorage.setItem("cc-room-state", JSON.stringify({ hostId: state.room.hostId, state: state.room.state }));
+  }
+
   function setStatus(s) {
     state.status = s;
     $("dot").className = `dot ${s}`;
@@ -145,6 +154,7 @@
         state.wantRoom = { code: msg.room.code, name: msg.you.name, previousId: msg.you.id };
         sessionStorage.setItem("cc-room", JSON.stringify(state.wantRoom));
         history.replaceState(null, "", `/s/${msg.room.code}`);
+        rememberRoom();
         if (msg.type === "room_created") system(`Sala ${msg.room.code} criada. Mande o link para quem vai assistir com você 💞`);
         else system(rejoin ? "Reconectado à sala." : `Você entrou na sala ${msg.room.code}.`);
         showRoom();
@@ -169,6 +179,7 @@
         state.room.hostId = msg.hostId;
         const name = state.room.participants.find((p) => p.id === msg.hostId)?.name || "alguém";
         system(msg.hostId === state.you.id ? "Você agora é o host ★" : `${name} agora é o host ★`);
+        rememberRoom();
         renderCouple();
         renderRole();
         return;
@@ -176,6 +187,7 @@
       case "sync":
         noteStateChange(state.room.state, msg);
         state.room.state = { paused: msg.paused, currentTime: msg.currentTime, updatedAt: msg.updatedAt, url: msg.url };
+        rememberRoom();
         applyState(state.room.state);
         return;
       case "chat":
@@ -237,6 +249,7 @@
     state.wantRoom = null;
     state.messages = [];
     sessionStorage.removeItem("cc-room");
+    sessionStorage.removeItem("cc-room-state");
     destroySource();
     history.replaceState(null, "", "/");
     $("view-room").hidden = true;
@@ -567,6 +580,7 @@
     const next = { paused: pb.paused, currentTime: pb.currentTime, updatedAt: Date.now(), url: state.source?.url ?? state.room.state.url ?? null };
     noteStateChange(state.room.state, next);
     state.room.state = next;
+    rememberRoom();
     send({ type: "sync", paused: next.paused, currentTime: next.currentTime, url: next.url });
   }
   // Seek do host no YouTube não gera evento: detecta pulo comparando com o tempo esperado.

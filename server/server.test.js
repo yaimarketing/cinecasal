@@ -136,6 +136,36 @@ test("reação é reenviada a todos e host que cai recupera o papel com previous
   b.ws.close();
 });
 
+test("sala perdida é recriada com o mesmo código e estado; host antigo recupera o papel", async () => {
+  const a = await connect();
+  const b = await connect();
+  await a.next();
+  await b.next();
+  const lost = { code: "ABCDEF", hostId: "id-antigo-da-ana", state: { paused: false, currentTime: 1200, updatedAt: Date.now(), url: "https://youtu.be/abc123" } };
+  // Bia (convidada) reconecta primeiro: recria a sala e vira host provisória.
+  b.send({ type: "join_room", code: lost.code, name: "Bia", previousId: "id-antigo-da-bia", recreate: lost });
+  const rb = await b.next();
+  assert.equal(rb.type, "room_joined");
+  assert.equal(rb.room.code, "ABCDEF");
+  assert.equal(rb.room.hostId, rb.you.id);
+  assert.equal(rb.room.state.currentTime, 1200);
+  assert.equal(rb.room.state.url, "https://youtu.be/abc123");
+  // Ana (host) volta com o id antigo: recupera o papel.
+  a.send({ type: "join_room", code: lost.code, name: "Ana", previousId: "id-antigo-da-ana", recreate: lost });
+  const ra = await a.next();
+  assert.equal(ra.room.hostId, ra.you.id);
+  assert.equal((await b.next()).type, "participant_joined");
+  assert.equal((await b.next()).reason, "host_back");
+  // Sem "recreate", código desconhecido continua dando erro.
+  const c = await connect();
+  await c.next();
+  c.send({ type: "join_room", code: "ZZZZZZ", name: "Zé" });
+  assert.equal((await c.next()).code, "room_not_found");
+  a.ws.close();
+  b.ws.close();
+  c.ws.close();
+});
+
 test("sala inexistente e mensagens inválidas", async () => {
   const c = await connect();
   await c.next();

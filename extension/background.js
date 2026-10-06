@@ -162,7 +162,14 @@ function ensureConnected() {
     reconnectDelay = RECONNECT_MIN_MS;
     // Reentra na sala em que estávamos (reconexão ou reinício do worker).
     if (session.wantRoom && session.room) {
-      sendToServer({ type: "join_room", code: session.wantRoom.code, name: session.wantRoom.name });
+      sendToServer({
+        type: "join_room",
+        code: session.wantRoom.code,
+        name: session.wantRoom.name,
+        previousId: session.you?.id,
+        // Se o servidor reiniciou, recria a sala com o último estado conhecido.
+        recreate: { hostId: session.room.hostId, state: session.room.state },
+      });
     }
     for (const m of queue) sendToServer(m);
     queue = [];

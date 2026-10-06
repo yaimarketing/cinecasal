@@ -93,6 +93,30 @@ function createRoom(host) {
   return room;
 }
 
+// Recria uma sala perdida. Quem recria vira host provisório; se o host antigo voltar
+// (previousId igual ao hostId informado) dentro do prazo, recupera o papel.
+function recreateRoom(code, client, info) {
+  const st = info.state || {};
+  const currentTime = Number(st.currentTime);
+  /** @type {Room} */
+  const room = {
+    code,
+    hostId: client.id,
+    participants: new Map(),
+    state: {
+      paused: st.paused == null ? true : Boolean(st.paused),
+      currentTime: Number.isFinite(currentTime) && currentTime >= 0 ? currentTime : 0,
+      updatedAt: Number(st.updatedAt) || Date.now(),
+      url: cleanUrl(st.url),
+    },
+    createdAt: Date.now(),
+  };
+  if (info.hostId && info.hostId !== client.id) room.formerHost = { id: String(info.hostId), until: Date.now() + HOST_RESUME_MS };
+  rooms.set(code, room);
+  log(`sala ${code} recriada por ${client.name}`);
+  return room;
+}
+
 // Tira o cliente da sala em que está (se estiver), avisa os outros,
 // passa o host adiante e apaga a sala se ficou vazia.
 function leaveRoom(client, { notifySelf = true } = {}) {
@@ -143,7 +167,12 @@ function handleMessage(client, raw) {
 
     case "join_room": {
       const code = String(msg.code ?? "").trim().toUpperCase();
-      const room = rooms.get(code);
+      let room = rooms.get(code);
+      // O servidor reiniciou (ou dormiu) e a sala sumiu da memória: quem estava nela pode recriá-la
+      // com o mesmo código e o último estado conhecido (vídeo e tempo), para ninguém ter que começar de novo.
+      if (!room && msg.recreate && /^[A-Z0-9]{6}$/.test(code)) {
+        room = recreateRoom(code, client, msg.recreate);
+      }
       if (!room) return sendError(client.ws, "room_not_found", "Sala não encontrada. Confira o código.");
       if (client.room === room) return send(client.ws, { type: "room_joined", you: { id: client.id, name: client.name }, room: publicRoom(room) });
       leaveRoom(client, { notifySelf: false });
